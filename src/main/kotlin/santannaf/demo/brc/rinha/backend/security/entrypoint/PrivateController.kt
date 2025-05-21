@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(path = ["/private"])
 class PrivateController {
+
     @GetMapping
     fun getMessagePrivate(): ResponseEntity<*> {
         return ResponseEntity.ok("Hello, private!")

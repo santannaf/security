@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login JWT</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #4e54c8, #8f94fb);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        .container h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.7rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            background-color: #4e54c8;
+            color: #fff;
+            padding: 0.7rem;
+            width: 100%;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #3d41a3;
+        }
+
+        #response {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #555;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Usuário"/>
+    <input type="password" id="password" placeholder="Senha"/>
+    <button onclick="login()">Entrar</button>
+    <button onclick="acessarRotaPrivada()">Acessar Rota Privada</button>
+    <div id="response"></div>
+</div>
+
+<script>
+    let token = '';
+
+    function toBase64(str) {
+        return btoa(str); // codifica em Base64 (compatível com navegador)
+    }
+
+    async function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const basicAuth = toBase64(`${username}:${password}`);
+        const res = await fetch("http://localhost:8080/authenticate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Basic ${basicAuth}`
+            }
+        });
+
+        const data = await res.text();
+
+        if (data) {
+            token = data;
+            document.getElementById("response").innerText = "Login bem-sucedido! Token armazenado.";
+        } else {
+            document.getElementById("response").innerText = "Falha no login: " + (data.message || res.statusText);
+        }
+    }
+
+    async function acessarRotaPrivada() {
+        if (!token) {
+            document.getElementById("response").innerText = "Você precisa fazer login primeiro.";
+            return;
+        }
+
+        const auxToken = `Bearer ${token}`
+        const res = await fetch("http://localhost:8080/private", {
+            method: "GET",
+            headers: {
+                "Authorization": auxToken
+            }
+        });
+
+        document.getElementById("response").innerText = await res.text();
+    }
+</script>
+</body>
+</html>
